@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robohawkscode.AutonomousBase;
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 class AndrewAutonomous extends LinearOpMode {
@@ -55,9 +56,16 @@ class AndrewAutonomous extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED, 48, 48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
+        encoderDrive(DRIVE_SPEED, 12, 12, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
         encoderDrive(TURN_SPEED, 12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
-        encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+        encoderDrive(DRIVE_SPEED, -12, -12, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+        mechanumDrive(DRIVE_SPEED, 12, 5.0, "Left");
+        mechanumDrive(DRIVE_SPEED, 12, 5.0, "Right");
+        mechanumDrive(DRIVE_SPEED, 12, 5.0, "Left Diagonal");
+        mechanumDrive(DRIVE_SPEED, 12, 5.0, "Right Diagonal");
+        mechanumDrive(DRIVE_SPEED, -12, 5.0, "Left Diagonal");
+        mechanumDrive(DRIVE_SPEED, -12, 5.0, "Right Diagonal");
+
 
         sleep(1000);     // pause for servos to move
 
@@ -116,6 +124,93 @@ class AndrewAutonomous extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.frontLeftDrive.isBusy() && robot.frontRightDrive.isBusy() && robot.backLeftDrive.isBusy() && robot.backRightDrive.isBusy()))
                 ;
+        }
+
+        // Stop all motion;
+        robot.frontLeftDrive.setPower(0);
+        robot.frontRightDrive.setPower(0);
+        robot.backLeftDrive.setPower(0);
+        robot.backRightDrive.setPower(0);
+
+        // Turn off RUN_TO_POSITION
+        robot.frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //  sleep(250);   // optional pause after each move
+    }
+    public void mechanumDrive(double speed,
+                             double distance,
+                             double timeoutS, String direction) {
+        int newFrontLeftTarget, newFrontRightTarget;
+        int newBackLeftTarget, newBackRightTarget;
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            switch(direction){
+                case "Right":
+                    newFrontLeftTarget = robot.frontLeftDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newFrontRightTarget = robot.frontRightDrive.getCurrentPosition() - (int) (distance * COUNTS_PER_INCH);
+                    newBackLeftTarget = robot.backLeftDrive.getCurrentPosition() - (int) (distance * COUNTS_PER_INCH);
+                    newBackRightTarget = robot.backRightDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    break;
+                case "Left":
+                    newFrontLeftTarget = robot.frontLeftDrive.getCurrentPosition() - (int) (distance * COUNTS_PER_INCH);
+                    newFrontRightTarget = robot.frontRightDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newBackLeftTarget = robot.backLeftDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newBackRightTarget = robot.backRightDrive.getCurrentPosition() - (int) (distance * COUNTS_PER_INCH);
+                    break;
+                case "Diagonal Right":
+                    newFrontLeftTarget = robot.frontLeftDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newFrontRightTarget = robot.frontRightDrive.getCurrentPosition();
+                    newBackLeftTarget = robot.backLeftDrive.getCurrentPosition();
+                    newBackRightTarget = robot.backRightDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    break;
+                case "Diagonal Left":
+                    newFrontLeftTarget = robot.frontLeftDrive.getCurrentPosition();
+                    newFrontRightTarget = robot.frontRightDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newBackLeftTarget = robot.backLeftDrive.getCurrentPosition() + (int) (distance * COUNTS_PER_INCH);
+                    newBackRightTarget = robot.backRightDrive.getCurrentPosition();
+                    break;
+                default:
+                    newFrontLeftTarget = robot.frontLeftDrive.getCurrentPosition();
+                    newFrontRightTarget = robot.frontRightDrive.getCurrentPosition();
+                    newBackLeftTarget = robot.backLeftDrive.getCurrentPosition();
+                    newBackRightTarget = robot.backRightDrive.getCurrentPosition();
+                    telemetry.addData("Direction", "Invalid");
+                    telemetry.update();
+            }
+
+            robot.frontLeftDrive.setTargetPosition(newFrontLeftTarget);
+            robot.frontRightDrive.setTargetPosition(newFrontRightTarget);
+
+            robot.backLeftDrive.setTargetPosition(newBackLeftTarget);
+            robot.backRightDrive.setTargetPosition(newBackRightTarget);
+
+            // Turn On RUN_TO_POSITION
+            robot.frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+            robot.frontLeftDrive.setPower(Math.abs(speed));
+            robot.frontRightDrive.setPower(Math.abs(speed));
+            robot.backLeftDrive.setPower(Math.abs(speed));
+            robot.backRightDrive.setPower(Math.abs(speed));
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() && (runtime.seconds() < timeoutS) &&
+                    robot.frontLeftDrive.isBusy() && robot.frontRightDrive.isBusy() &&
+                    robot.backLeftDrive.isBusy() && robot.backRightDrive.isBusy()) ;
         }
 
         // Stop all motion;

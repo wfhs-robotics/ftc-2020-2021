@@ -15,7 +15,7 @@ public class AutonomousBase {
     private ElapsedTime period  = new ElapsedTime();
 
     AutonomousBase() {
-
+        init(hwMap);
     }
 
     public void init(HardwareMap ahwMap){

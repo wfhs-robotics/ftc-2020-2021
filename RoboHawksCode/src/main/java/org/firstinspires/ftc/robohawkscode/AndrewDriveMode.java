@@ -36,7 +36,7 @@ class AndrewDriveMode extends LinearOpMode {
             aB.backRightDrive.setPower(v4);
 
             double turn = gamepad1.right_stick_x;
-            
+
             aB.frontLeftDrive.setPower(turn);
             aB.frontRightDrive.setPower(-turn);
             aB.backLeftDrive.setPower(turn);

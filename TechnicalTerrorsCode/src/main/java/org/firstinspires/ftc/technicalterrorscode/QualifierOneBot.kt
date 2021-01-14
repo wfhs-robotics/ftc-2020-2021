@@ -15,7 +15,19 @@ class QualifierOneBot {
 
     var collectorGear: Servo? = null
 
+    var armPosition: Double = 0.0
+        set(value) {
+            val valueFinal = value.coerceIn(-1.0..1.0)
+
+            this.leftArmServo?.position = valueFinal
+            this.rightArmServo?.position = valueFinal
+
+            field = valueFinal
+        }
+
     private final val INIT_SERVO_POS = 0.5
+
+    final val VERSION = 2
 
     private var hwMap: HardwareMap? = null
 
@@ -37,13 +49,8 @@ class QualifierOneBot {
         this.rightArmServo = this.hwMap!!.get(Servo::class.java, "right_arm")
         this.collectorGear = this.hwMap!!.get(Servo::class.java, "collector_gear")
 
-        this.set_arm_position(INIT_SERVO_POS)
+        this.armPosition = INIT_SERVO_POS
 
         this.collectorGear?.position = 0.0;
-    }
-
-    fun set_arm_position(position: Double) {
-        this.leftArmServo?.position = position;
-        this.rightArmServo?.position = position;
     }
 }

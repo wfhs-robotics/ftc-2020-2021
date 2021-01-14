@@ -9,9 +9,12 @@ class TestKotlinOpmode : OpMode() {
     private val runtime: ElapsedTime = ElapsedTime()
     private var bot = QualifierOneBot()
 
+    private var buttonUpBounced = false
+    private var buttonDownBounced = false
+
     override fun init() {
-        telemetry.addData("Status", "Initialized")
         bot.init(hardwareMap)
+        telemetry.addData("Status", "Initialized ${bot.VERSION}")
     }
 
     override fun init_loop() {}
@@ -32,7 +35,24 @@ class TestKotlinOpmode : OpMode() {
         bot.rightFrontWheel!!.power = y - x - rx
         bot.rightBackWheel!!.power = y + x - rx
 
+        if (gamepad1.dpad_up && !buttonUpBounced) {
+            bot.armPosition += 0.05
+            buttonUpBounced = true
+        }
+        if (!gamepad1.dpad_up) {
+            buttonUpBounced = false
+        }
+
+        if (gamepad1.dpad_down && !buttonDownBounced) {
+            bot.armPosition -= 0.05
+            buttonDownBounced = true
+        }
+        if (!gamepad1.dpad_down) {
+            buttonDownBounced = false
+        }
+
         telemetry.addData("Status", "Run Time: $runtime")
+        telemetry.addData("Servos", "Position: ${bot.armPosition}")
         telemetry.update()
     }
 

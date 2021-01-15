@@ -2,19 +2,37 @@ package org.firstinspires.ftc.technicalterrorscode
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.util.ElapsedTime
+import kotlin.reflect.KMutableProperty0
 
 @TeleOp(name = "Basic: Kotlin OpMode", group = "Technical Terrors")
 class TestKotlinOpmode : OpMode() {
+    companion object {
+        const val SERVO_MOVE_INTERVAL = 0.05
+    }
+
     private val runtime: ElapsedTime = ElapsedTime()
     private var bot = QualifierOneBot()
 
-    private var buttonUpBounced = false
-    private var buttonDownBounced = false
+    private var buttonBounces: HashMap<
+            KMutableProperty0<Boolean>, Boolean> = HashMap()
+
+    private fun detectButton(button: KMutableProperty0<Boolean>, runFunction: () -> Unit) {
+        if (button.get()) {
+            if (buttonBounces[button] != true) {
+                runFunction()
+                buttonBounces[button] = true
+            }
+        } else {
+            buttonBounces[button] = false
+        }
+    }
 
     override fun init() {
         bot.init(hardwareMap)
-        telemetry.addData("Status", "Initialized ${bot.VERSION}")
+        telemetry.addData("Status", "Initialized {0x%08X}", BotConstants.VERSION)
+        telemetry.update()
     }
 
     override fun init_loop() {}
@@ -30,26 +48,18 @@ class TestKotlinOpmode : OpMode() {
         val x = gamepad1.left_stick_x.toDouble()
         val rx = gamepad1.right_stick_x.toDouble()
 
-        bot.leftFrontWheel!!.power = y + x + rx
-        bot.leftBackWheel!!.power = y - x + rx
-        bot.rightFrontWheel!!.power = y - x - rx
-        bot.rightBackWheel!!.power = y + x - rx
+        bot.leftFrontWheel.power = y + x + rx
+        bot.leftBackWheel.power = y - x + rx
+        bot.rightFrontWheel.power = y - x - rx
+        bot.rightBackWheel.power = y + x - rx
 
-        if (gamepad1.dpad_up && !buttonUpBounced) {
-            bot.armPosition += 0.05
-            buttonUpBounced = true
-        }
-        if (!gamepad1.dpad_up) {
-            buttonUpBounced = false
-        }
+        detectButton(gamepad1::dpad_up, {
+            bot.armPosition += SERVO_MOVE_INTERVAL
+        })
 
-        if (gamepad1.dpad_down && !buttonDownBounced) {
-            bot.armPosition -= 0.05
-            buttonDownBounced = true
-        }
-        if (!gamepad1.dpad_down) {
-            buttonDownBounced = false
-        }
+        detectButton(gamepad1::dpad_down, {
+            bot.armPosition -= SERVO_MOVE_INTERVAL
+        })
 
         telemetry.addData("Status", "Run Time: $runtime")
         telemetry.addData("Servos", "Position: ${bot.armPosition}")

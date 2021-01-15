@@ -5,52 +5,50 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 
 class QualifierOneBot {
-    var leftBackWheel: DcMotor? = null
-    var rightBackWheel: DcMotor? = null
-    var leftFrontWheel: DcMotor? = null
-    var rightFrontWheel: DcMotor? = null
+    lateinit var leftBackWheel: DcMotor
+    lateinit var rightBackWheel: DcMotor
+    lateinit var leftFrontWheel: DcMotor
+    lateinit var rightFrontWheel: DcMotor
 
-    var leftArmServo: Servo? = null
-    var rightArmServo: Servo? = null
+    lateinit var leftArmServo: Servo
+    lateinit var rightArmServo: Servo
 
-    var collectorGear: Servo? = null
+    lateinit var collectorGear: Servo
 
     var armPosition: Double = 0.0
         set(value) {
-            val valueFinal = value.coerceIn(-1.0..1.0)
+            val valueFinal = value.coerceIn(BotConstants.ARM_SERVO_MIN..BotConstants.ARM_SERVO_MAX)
 
-            this.leftArmServo?.position = valueFinal
-            this.rightArmServo?.position = valueFinal
+            this.leftArmServo.position = valueFinal
+            this.rightArmServo.position = valueFinal
 
             field = valueFinal
         }
 
-    private final val INIT_SERVO_POS = 0.5
-
-    final val VERSION = 2
-
-    private var hwMap: HardwareMap? = null
+    private lateinit var hwMap: HardwareMap
 
     fun init(ahwMap: HardwareMap) {
         this.hwMap = ahwMap;
 
-        this.leftBackWheel = this.hwMap!!.get(DcMotor::class.java, "left_back_wheel")
-        this.rightBackWheel = this.hwMap!!.get(DcMotor::class.java, "right_back_wheel")
-        this.leftFrontWheel = this.hwMap!!.get(DcMotor::class.java, "left_front_wheel")
-        this.rightFrontWheel = this.hwMap!!.get(DcMotor::class.java, "right_front_wheel")
+        this.leftBackWheel = this.hwMap.get(DcMotor::class.java, "left_back_wheel")
+        this.rightBackWheel = this.hwMap.get(DcMotor::class.java, "right_back_wheel")
+        this.leftFrontWheel = this.hwMap.get(DcMotor::class.java, "left_front_wheel")
+        this.rightFrontWheel = this.hwMap.get(DcMotor::class.java, "right_front_wheel")
 
-        this.leftBackWheel?.power = 0.0
-        this.rightBackWheel?.power = 0.0
+        this.leftBackWheel.power = 0.0
+        this.rightBackWheel.power = 0.0
 
-        this.leftFrontWheel?.power = 0.0
-        this.rightFrontWheel?.power = 0.0
+        this.leftFrontWheel.power = 0.0
+        this.rightFrontWheel.power = 0.0
 
-        this.leftArmServo = this.hwMap!!.get(Servo::class.java, "left_arm")
-        this.rightArmServo = this.hwMap!!.get(Servo::class.java, "right_arm")
-        this.collectorGear = this.hwMap!!.get(Servo::class.java, "collector_gear")
+        this.leftArmServo = this.hwMap.get(Servo::class.java, "left_arm")
+        this.rightArmServo = this.hwMap.get(Servo::class.java, "right_arm")
+        this.collectorGear = this.hwMap.get(Servo::class.java, "collector_gear")
 
-        this.armPosition = INIT_SERVO_POS
+        this.leftArmServo.direction = Servo.Direction.REVERSE
 
-        this.collectorGear?.position = 0.0;
+        this.armPosition = BotConstants.INIT_ARM_SERVO_POS
+
+        this.collectorGear.position = 0.0;
     }
 }

@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.robohawkscode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robohawkscode.AutonomousBase;
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
-
-class AndrewAutonomous extends LinearOpMode {
+@TeleOp(name="Basic: Autonomous", group="Autonomous")
+public class AndrewAutonomous extends LinearOpMode {
 
     AutonomousBase robot = new AutonomousBase();   // Use a Pushbot's hardware
     private ElapsedTime runtime = new ElapsedTime();

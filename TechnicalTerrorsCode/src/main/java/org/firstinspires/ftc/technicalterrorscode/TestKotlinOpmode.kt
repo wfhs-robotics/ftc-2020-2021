@@ -1,32 +1,38 @@
 package org.firstinspires.ftc.technicalterrorscode
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.util.ElapsedTime
-import com.qualcomm.robotcore.util.Range
+import kotlin.reflect.KMutableProperty0
 
 @TeleOp(name = "Basic: Kotlin OpMode", group = "Technical Terrors")
 class TestKotlinOpmode : OpMode() {
-    private val runtime: ElapsedTime = ElapsedTime()
-    private var leftDrive: DcMotor? = null
-    private var rightDrive: DcMotor? = null
+    companion object {
+        const val SERVO_MOVE_INTERVAL = 0.05
+    }
 
-    var leftPower: Double = 0.00
-    var rightPower: Double = 0.00
+    private val runtime: ElapsedTime = ElapsedTime()
+    private var bot = QualifierOneBot()
+
+    private var buttonBounces: HashMap<
+            KMutableProperty0<Boolean>, Boolean> = HashMap()
+
+    private fun detectButton(button: KMutableProperty0<Boolean>, runFunction: () -> Unit) {
+        if (button.get()) {
+            if (buttonBounces[button] != true) {
+                runFunction()
+                buttonBounces[button] = true
+            }
+        } else {
+            buttonBounces[button] = false
+        }
+    }
 
     override fun init() {
-        telemetry.addData("Status", "Initialized")
-
-        leftDrive = hardwareMap.get(DcMotor::class.java, "left_drive")
-        rightDrive = hardwareMap.get(DcMotor::class.java, "right_drive")
-
-        leftDrive!!.setDirection(Direction.FORWARD)
-        rightDrive!!.setDirection(Direction.REVERSE)
-
-        telemetry.addData("Status", "Initialized")
+        bot.init(hardwareMap)
+        telemetry.addData("Status", "Initialized {0x%08X}", BotConstants.VERSION)
+        telemetry.update()
     }
 
     override fun init_loop() {}
@@ -36,14 +42,28 @@ class TestKotlinOpmode : OpMode() {
     }
 
     override fun loop() {
-        leftPower  = (-gamepad1.left_stick_y).toDouble()
-        rightPower = (-gamepad1.right_stick_y).toDouble()
+        // stolen code from some tutorial 🤷‍
+        val y = -gamepad1.left_stick_y.toDouble()
 
-        leftDrive!!.setPower(leftPower)
-        rightDrive!!.setPower(rightPower)
+        val x = gamepad1.left_stick_x.toDouble()
+        val rx = gamepad1.right_stick_x.toDouble()
+
+        bot.leftFrontWheel.power = y + x + rx
+        bot.leftBackWheel.power = y - x + rx
+        bot.rightFrontWheel.power = y - x - rx
+        bot.rightBackWheel.power = y + x - rx
+
+        detectButton(gamepad1::dpad_up, {
+            bot.armPosition += SERVO_MOVE_INTERVAL
+        })
+
+        detectButton(gamepad1::dpad_down, {
+            bot.armPosition -= SERVO_MOVE_INTERVAL
+        })
 
         telemetry.addData("Status", "Run Time: $runtime")
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower)
+        telemetry.addData("Servos", "Position: ${bot.armPosition}")
+        telemetry.update()
     }
 
     override fun stop() {}
